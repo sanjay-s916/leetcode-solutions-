@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode to GitHub Sync</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="logo-wrap">
+      <div class="logo">⚡</div>
+      <div>
+        <h1>LeetCode Sync</h1>
+        <p class="subtitle">Auto-Sync Solves to GitHub</p>
+      </div>
+    </div>
+    <div id="status-pill" class="status-pill disconnected">
+      <span class="status-dot"></span>
+      <span id="status-pill-text">Not Connected</span>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-content">
+    <!-- View 1: Onboarding / Setup -->
+    <section id="onboarding-view" class="view">
+      <div class="intro-box">
+        <p>Sync all your accepted LeetCode solves directly to your GitHub repository in 1 second!</p>
+      </div>
+
+      <!-- Step 1: Token -->
+      <div class="card step-card">
+        <div class="step-header">
+          <span class="step-num">1</span>
+          <h3>Connect GitHub Account</h3>
+        </div>
+        <div class="form-group">
+          <label for="ghToken">Personal Access Token (Classic)</label>
+          <div class="input-with-action">
+            <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
+            <button id="verifyTokenBtn" class="btn btn-sm btn-accent" title="Verify Token">Verify</button>
+          </div>
+          <span class="hint">
+            Needs <code>repo</code> scope.
+            <a href="https://github.com/settings/tokens/new?scopes=repo&description=LeetCode%20GitHub%20Auto%20Sync" target="_blank" class="link-highlight">Generate token with 1 click &rarr;</a>
+          </span>
+        </div>
+
+        <div id="user-preview" class="user-preview hidden">
+          <img id="user-avatar" src="" alt="Avatar" class="avatar" />
+          <div class="user-meta">
+            <span id="user-name" class="user-name"></span>
+            <span id="user-login" class="user-login"></span>
+          </div>
+          <span class="badge badge-success">✓ Verified</span>
+        </div>
+      </div>
+
+      <!-- Step 2: Repository -->
+      <div class="card step-card" id="repo-step-card">
+        <div class="step-header">
+          <span class="step-num">2</span>
+          <h3>Select or Create Repository</h3>
+        </div>
+
+        <div class="tabs">
+          <button id="tab-existing" class="tab-btn active">Use Existing Repo</button>
+          <button id="tab-create" class="tab-btn">➕ Create New Repo</button>
+        </div>
+
+        <!-- Existing Repo Section -->
+        <div id="section-existing-repo" class="tab-content active">
+          <div class="form-group">
+            <label for="repoSelect">Choose from your repositories</label>
+            <select id="repoSelect" class="form-select">
+              <option value="">-- Enter Token First --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="manualRepoInput">Or type <code>owner/repo-name</code> manually</label>
+            <input type="text" id="manualRepoInput" placeholder="username/leetcode-solutions" />
+          </div>
+        </div>
+
+        <!-- Create New Repo Section -->
+        <div id="section-create-repo" class="tab-content hidden">
+          <div class="form-group">
+            <label for="newRepoName">Repository Name</label>
+            <input type="text" id="newRepoName" value="leetcode-solutions" placeholder="leetcode-solutions" />
+          </div>
+          <div class="form-group toggle-row">
+            <label for="repoPrivacyToggle">Private Repository</label>
+            <label class="switch">
+              <input type="checkbox" id="repoPrivacyToggle" />
+              <span class="slider"></span>
+            </label>
+          </div>
+          <button id="createRepoBtn" class="btn btn-secondary btn-full">Create & Link Repository</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Preferences -->
+      <div class="card step-card">
+        <div class="step-header">
+          <span class="step-num">3</span>
+          <h3>Organization Settings</h3>
+        </div>
+        <div class="form-group">
+          <label for="folderStructureSelect">Organize Problems By:</label>
+          <select id="folderStructureSelect" class="form-select">
+            <option value="topic" selected>📊 Topic / Data Structure (arrays/, strings/, trees/)</option>
+            <option value="difficulty">🎯 Difficulty (easy/, medium/, hard/)</option>
+            <option value="flat">📁 Single Flat Folder</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="branchInput">Target Branch</label>
+          <input type="text" id="branchInput" value="main" placeholder="main" />
+        </div>
+      </div>
+
+      <button id="completeSetupBtn" class="btn btn-primary btn-large btn-full">
+        🚀 Connect & Start Auto-Syncing
+      </button>
+    </section>
+
+    <!-- View 2: Dashboard (Connected) -->
+    <section id="dashboard-view" class="view hidden">
+      <!-- Connected Profile Card -->
+      <div class="card profile-card">
+        <img id="dash-avatar" src="" alt="Avatar" class="avatar-lg" />
+        <div class="profile-info">
+          <h2 id="dash-repo-title">username/repo</h2>
+          <a id="dash-repo-link" href="#" target="_blank" class="repo-link">View on GitHub &rarr;</a>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-label">Total Solved</span>
+          <span id="stat-total" class="stat-value">0</span>
+        </div>
+        <div class="stat-card stat-easy">
+          <span class="stat-label">Easy</span>
+          <span id="stat-easy" class="stat-value">0</span>
+        </div>
+        <div class="stat-card stat-medium">
+          <span class="stat-label">Medium</span>
+          <span id="stat-medium" class="stat-value">0</span>
+        </div>
+        <div class="stat-card stat-hard">
+          <span class="stat-label">Hard</span>
+          <span id="stat-hard" class="stat-value">0</span>
+        </div>
+      </div>
+
+      <!-- Last Synced Problem Card -->
+      <div id="last-synced-card" class="card last-synced-card hidden">
+        <span class="card-caption">Last Auto-Synced:</span>
+        <div class="last-problem-row">
+          <span id="last-problem-title" class="problem-title"></span>
+          <span id="last-problem-badge" class="badge"></span>
+        </div>
+        <span id="last-problem-time" class="time-hint"></span>
+      </div>
+
+      <!-- Action Controls -->
+      <div class="card controls-card">
+        <div class="control-row">
+          <div class="control-label">
+            <strong>Auto-Sync on Accept</strong>
+            <p class="hint">Instant 1-sec commit when verdict is Accepted</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="dashAutoSyncToggle" checked />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="control-divider"></div>
+
+        <div class="control-row">
+          <div class="control-label">
+            <strong>Folder Organization</strong>
+          </div>
+          <select id="dashFolderStructure" class="form-select-sm">
+            <option value="topic">By Topic / Data Structure</option>
+            <option value="difficulty">By Difficulty</option>
+            <option value="flat">Single Flat Folder</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="button-stack">
+        <button id="syncCurrentTabBtn" class="btn btn-secondary btn-full">
+          ⚡ Sync Active LeetCode Tab Now
+        </button>
+        <button id="editSettingsBtn" class="btn btn-outline btn-full">
+          ⚙️ Change Settings / Disconnect
+        </button>
+      </div>
+    </section>
+
+    <!-- Global Message Banner -->
+    <div id="message-banner" class="message-banner hidden"></div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <span>LeetCode to GitHub Auto-Sync &bull; Manifest V3</span>
+  </footer>
+
+  <script src="env.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

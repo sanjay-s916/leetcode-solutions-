@@ -1,0 +1,51 @@
+name: LeetCode Auto-Sync
+
+on:
+  schedule:
+    # Runs daily at midnight UTC (and every 6 hours if active)
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Number of recent submissions to check'
+        required: false
+        default: '30'
+  repository_dispatch:
+    types: [leetcode-sync]
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 🔄 Sync LeetCode Solved Problems
+        env:
+          LEETCODE_USERNAME: ${{ secrets.LEETCODE_USERNAME || 'Sanjay_Sakthivel-2' }}
+          LEETCODE_SESSION: ${{ secrets.LEETCODE_SESSION }}
+        run: |
+          python sync.py --limit ${{ github.event.inputs.limit || '100' }}
+
+      - name: 🚀 Commit and Push Changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "LeetCode Sync Bot"
+          if [[ -n $(git status --porcelain) ]]; then
+            git add .
+            git commit -m "Auto-sync LeetCode solutions [skip ci]"
+            git push
+          else
+            echo "No new solutions to sync."
+          fi

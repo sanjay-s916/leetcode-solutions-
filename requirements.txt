@@ -1,0 +1,3 @@
+# Pure Python standard library is used by default (no external dependencies required).
+# If you prefer using requests for extended proxy / certificate customization:
+# requests>=2.31.0

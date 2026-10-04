@@ -1,0 +1,55 @@
+{
+  "manifest_version": 3,
+  "name": "LeetCode to GitHub Auto-Sync",
+  "version": "1.2.0",
+  "description": "Automatically sync your accepted LeetCode solves to your GitHub repository in 1 second, categorized by data structures and topics.",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://leetcode.com/*",
+    "https://leetcode.cn/*",
+    "https://api.github.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://leetcode.com/problems/*",
+        "https://leetcode.cn/problems/*"
+      ],
+      "js": [
+        "injected.js"
+      ],
+      "world": "MAIN",
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "https://leetcode.com/problems/*",
+        "https://leetcode.cn/problems/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "LeetCode GitHub Sync",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
