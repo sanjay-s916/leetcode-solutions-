@@ -96,7 +96,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     const activeToken = stored.ghToken || env.token;
 
     if (activeRepo && activeToken) {
-      renderDashboard(stored, stats);
+      if (!stored.ghRepo || !stored.ghToken) {
+        await chrome.storage.sync.set({
+          ghRepo: activeRepo,
+          ghToken: activeToken,
+          ghBranch: stored.ghBranch || env.branch || "main",
+          autoSyncEnabled: true
+        });
+      }
+      renderDashboard({ ...stored, ghRepo: activeRepo, ghToken: activeToken }, stats);
     } else {
       renderOnboarding();
     }
